@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<!-- Casino Automat Button und Modal werden unten hinzugefügt -->
+<!-- Casino Automat Button -->
+<div style="text-align:center;margin-bottom:10px;">
+    <button id="casinoBtn" style="background:linear-gradient(135deg,#ffe066 60%,#ffb347 100%);color:#1e3c72;border:none;border-radius:24px;padding:10px 28px;font-size:1.1em;font-weight:bold;margin:15px 8px 0 0;box-shadow:0 2px 8px #0002;cursor:pointer;transition:background 0.2s,color 0.2s,transform 0.1s;">
+        Casino Automat
+    </button>
+</div>
+<script>
+    // Casino Automat Modal mit Animation
+    function showCasinoAutomat() {
+        if (document.getElementById('casinoModal')) return;
+        let modal = document.createElement('div');
+        modal.id = 'casinoModal';
+        modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0008;display:flex;justify-content:center;align-items:center;z-index:9999;';
+        modal.innerHTML = `
+            <div style="background:#fff;color:#1e3c72;padding:32px 28px;border-radius:16px;box-shadow:0 4px 24px #0003;min-width:320px;max-width:95vw;text-align:center;">
+                <h2 style="color:#1e3c72;">Casino Automat</h2>
+                <div id="slotDisplay" style="font-size:2.5em;letter-spacing:18px;margin:18px 0;min-height:1em;">🍒 🍋 🍀</div>
+                <button id="spinBtn" style="background:linear-gradient(135deg,#ffe066 60%,#ffb347 100%);color:#1e3c72;border:none;border-radius:24px;padding:10px 28px;font-size:1.1em;font-weight:bold;margin:10px 0 0 0;box-shadow:0 2px 8px #0002;cursor:pointer;">Drehen</button>
+                <div id="slotResult" style="margin-top:18px;font-size:1.2em;min-height:32px;"></div>
+                <button id="closeCasinoModal" style="background:#ffe066;color:#1e3c72;padding:8px 18px;border-radius:20px;border:none;font-weight:bold;cursor:pointer;box-shadow:0 2px 8px #0002;margin-top:18px;">Schließen</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const symbols = ['🍒', '🍋', '🍀', '🔔', '7️⃣'];
+        let spinning = false;
+
+        document.getElementById('spinBtn').onclick = function() {
+            if (spinning) return;
+            spinning = true;
+            document.getElementById('slotResult').innerHTML = '';
+            let slotDisplay = document.getElementById('slotDisplay');
+            let spins = 20; // Anzahl der Animation-Schritte
+            let interval = 60; // ms zwischen Schritten
+            let current = 0;
+            let slots = [0, 0, 0];
+            let anim = setInterval(() => {
+                slots = [
+                    symbols[Math.floor(Math.random() * symbols.length)],
+                    symbols[Math.floor(Math.random() * symbols.length)],
+                    symbols[Math.floor(Math.random() * symbols.length)]
+                ];
+                slotDisplay.textContent = slots.join(' ');
+                current++;
+                if (current >= spins) {
+                    clearInterval(anim);
+                    // Endgültiges Ergebnis
+                    slots = [
+                        symbols[Math.floor(Math.random() * symbols.length)],
+                        symbols[Math.floor(Math.random() * symbols.length)],
+                        symbols[Math.floor(Math.random() * symbols.length)]
+                    ];
+                    slotDisplay.textContent = slots.join(' ');
+                    let result = '';
+                    if (slots[0] === slots[1] && slots[1] === slots[2]) {
+                        if (slots[0] === '7️⃣') result = '<span style="color:#38ef7d;">Jackpot! 100€</span>';
+                        else result = '<span style="color:#ffe066;">3x ' + slots[0] + ' - 20€ Gewinn!</span>';
+                    } else if (slots[0] === slots[1] || slots[1] === slots[2] || slots[0] === slots[2]) {
+                        result = '<span style="color:#38ef7d;">2 gleiche Symbole - 2€ Gewinn!</span>';
+                    } else {
+                        result = '<span style="color:#1e3c72;">Leider kein Gewinn.</span>';
+                    }
+                    document.getElementById('slotResult').innerHTML = result;
+                    spinning = false;
+                }
+            }, interval);
+        };
+        document.getElementById('closeCasinoModal').onclick = function() {
+            document.body.removeChild(modal);
+        };
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('casinoBtn');
+        if (btn) btn.onclick = showCasinoAutomat;
+    });
+</script>
+<script>
+    // Einfaches lokales Login (nur für Demo-Zwecke, NICHT sicher für echte Anwendungen!)
+    let loggedIn = sessionStorage.getItem('lotto_loggedin') === '1';
+    let isAdmin = sessionStorage.getItem('lotto_admin') === '1';
+
+    function showLoginModal() {
+        // Modal-Overlay
+        let modal = document.createElement('div');
+        modal.id = 'loginModal';
+        modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0008;display:flex;justify-content:center;align-items:center;z-index:9999;';
+        modal.innerHTML = `
+            <form id="loginForm" style="background:#fff;padding:32px 28px;border-radius:16px;box-shadow:0 4px 24px #0003;min-width:260px;">
+                <h2 style="color:#1e3c72;text-align:center;">Login</h2>
+                <div style="margin-bottom:14px;">
+                    <input type="text" id="user" placeholder="Benutzername" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;">
+                </div>
+                <div style="margin-bottom:18px;">
+                    <input type="password" id="pw" placeholder="Passwort" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;">
+                </div>
+                <button type="submit" style="width:100%;padding:10px;border-radius:8px;background:#ffe066;color:#1e3c72;font-weight:bold;border:none;cursor:pointer;">Login</button>
+                <div id="loginError" style="color:red;text-align:center;margin-top:10px;display:none;">Falsche Daten!</div>
+            </form>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault();
+            const user = document.getElementById('user').value;
+            const pw = document.getElementById('pw').value;
+            // Beispiel: Benutzername "user", Passwort "pass", Admin: "admin"/"admin"
+            if ((user === 'user' && pw === 'pass') || (user === 'admin' && pw === 'admin')) {
+                loggedIn = true;
+                sessionStorage.setItem('lotto_loggedin', '1');
+                if (user === 'admin') {
+                    isAdmin = true;
+                    sessionStorage.setItem('lotto_admin', '1');
+                } else {
+                    isAdmin = false;
+                    sessionStorage.removeItem('lotto_admin');
+                }
+                document.body.removeChild(modal);
+                renderProfile();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        };
+    }
+
+    function logout() {
+        loggedIn = false;
+        isAdmin = false;
+        sessionStorage.removeItem('lotto_loggedin');
+        sessionStorage.removeItem('lotto_admin');
+        renderProfile();
+    }
+
+    function renderProfile() {
+        let profile = document.getElementById('profileBox');
+        if (!profile) {
+            profile = document.createElement('div');
+            profile.id = 'profileBox';
+            profile.style = 'position:fixed;top:18px;right:24px;z-index:1000;';
+            document.body.appendChild(profile);
+        }
+        if (!loggedIn) {
+            profile.innerHTML = `<button id="loginBtn" style="background:#ffe066;color:#1e3c72;padding:8px 18px;border-radius:20px;border:none;font-weight:bold;cursor:pointer;box-shadow:0 2px 8px #0002;">Login</button>`;
+            document.getElementById('loginBtn').onclick = showLoginModal;
+        } else {
+            profile.innerHTML = `
+                <div style="position:relative;">
+                    <button id="profileBtn" style="background:#fff;color:#1e3c72;padding:8px 18px;border-radius:20px;border:none;font-weight:bold;cursor:pointer;box-shadow:0 2px 8px #0002;display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.2em;">&#128100;</span>
+                        <span>${isAdmin ? 'Admin' : 'User'}</span>
+                    </button>
+                    <div id="profileMenu" style="display:none;position:absolute;right:0;top:110%;background:#fff;color:#1e3c72;border-radius:12px;box-shadow:0 4px 16px #0003;min-width:160px;">
+                        <div style="padding:12px 18px;border-bottom:1px solid #eee;">Einstellungen</div>
+                        <button id="logoutBtn" style="width:100%;background:none;border:none;padding:12px 18px;text-align:left;cursor:pointer;">Logout</button>
+                        ${isAdmin ? `<button id="adminBtn" style="width:100%;background:none;border:none;padding:12px 18px;text-align:left;cursor:pointer;">Admin Konsole</button>` : ''}
+                    </div>
+                </div>
+            `;
+            const btn = document.getElementById('profileBtn');
+            const menu = document.getElementById('profileMenu');
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            };
+            document.body.addEventListener('click', function() {
+                menu.style.display = 'none';
+            });
+            document.getElementById('logoutBtn').onclick = logout;
+            if (isAdmin) {
+                document.getElementById('adminBtn').onclick = function() {
+                    // Admin Konsole als Modal anzeigen
+                    let adminModal = document.createElement('div');
+                    adminModal.id = 'adminModal';
+                    adminModal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0008;display:flex;justify-content:center;align-items:center;z-index:10000;';
+                    adminModal.innerHTML = `
+                        <div style="background:#fff;color:#1e3c72;padding:32px 28px;border-radius:16px;box-shadow:0 4px 24px #0003;min-width:340px;max-width:95vw;">
+                            <h2 style="color:#1e3c72;text-align:center;">Admin Konsole</h2>
+                            <div style="margin-bottom:18px;">
+                                <b>Status:</b> Angemeldet als <span style="color:#38ef7d;">Admin</span>
+                            </div>
+                            <div style="margin-bottom:18px;">
+                                <button id="showStatsBtn" style="margin-bottom:10px;width:100%;">Lotto-Statistiken anzeigen</button>
+                                <button id="editRubellosBtn" style="margin-bottom:10px;width:100%;">Rubellos-Konfiguration ändern</button>
+                                <button id="showUsersBtn" style="margin-bottom:10px;width:100%;">Nutzerverwaltung</button>
+                                <button id="resetSessionBtn" style="margin-bottom:10px;width:100%;">Session zurücksetzen</button>
+                                <button id="simulateJackpotBtn" style="margin-bottom:10px;width:100%;">Jackpot simulieren</button>
+                                <button id="exportConfigBtn" style="margin-bottom:10px;width:100%;">Konfiguration exportieren</button>
+                                <button id="importConfigBtn" style="margin-bottom:10px;width:100%;">Konfiguration importieren</button>
+                            </div>
+                            <div id="adminContent" style="margin-bottom:18px;"></div>
+                            <button id="closeAdminModal" style="background:#ffe066;color:#1e3c72;padding:8px 18px;border-radius:20px;border:none;font-weight:bold;cursor:pointer;box-shadow:0 2px 8px #0002;">Schließen</button>
+                        </div>
+                    `;
+                    document.body.appendChild(adminModal);
+
+                    // Lotto-Statistiken (Demo: nur zufällige Zahlen)
+                    document.getElementById('showStatsBtn').onclick = function() {
+                        let stats = '';
+                        stats += '<b>Lotto-Statistiken (Demo):</b><br>';
+                        stats += 'Meistgezogene Zahl: <span style="color:#38ef7d;">' + (Math.floor(Math.random()*49)+1) + '</span><br>';
+                        stats += 'Wenigstgezogene Zahl: <span style="color:#ffe066;">' + (Math.floor(Math.random()*49)+1) + '</span><br>';
+                        stats += 'Durchschnittlicher Gewinn: <span style="color:#38ef7d;">' + (Math.floor(Math.random()*100)+10) + '€</span>';
+                        document.getElementById('adminContent').innerHTML = stats;
+                    };
+
+                    // Rubellos-Konfiguration ändern (Demo: Werte anzeigen und editierbar machen)
+                    document.getElementById('editRubellosBtn').onclick = function() {
+                        let html = '<b>Rubellos-Konfiguration:</b><br>';
+                        html += '<form id="rubellosConfigForm">';
+                        rubelloseArten.forEach((art, idx) => {
+                            html += `<div style="margin-bottom:8px;">
+                                <b>${art.name}</b> - Felder: <input type="number" min="1" max="30" value="${art.felder}" style="width:50px;" name="felder${idx}">
+                                Gewinne: <input type="text" value="${art.gewinne.join(',')}" style="width:120px;" name="gewinne${idx}">
+                            </div>`;
+                        });
+                        html += '<button type="submit" style="margin-top:8px;">Speichern</button></form>';
+                        document.getElementById('adminContent').innerHTML = html;
+
+                        document.getElementById('rubellosConfigForm').onsubmit = function(e) {
+                            e.preventDefault();
+                            rubelloseArten.forEach((art, idx) => {
+                                let felder = parseInt(this['felder'+idx].value);
+                                let gewinne = this['gewinne'+idx].value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+                                if (felder > 0 && gewinne.length > 0) {
+                                    art.felder = felder;
+                                    art.gewinne = gewinne;
+                                }
+                            });
+                            document.getElementById('adminContent').innerHTML = '<span style="color:#38ef7d;">Gespeichert!</span>';
+                        };
+                    };
+
+                    // Nutzerverwaltung (Demo: zeigt nur die eingeloggten User)
+                    document.getElementById('showUsersBtn').onclick = function() {
+                        let html = '<b>Nutzerverwaltung (Demo):</b><br>';
+                        html += '<ul>';
+                        html += '<li>user (Standard)</li>';
+                        html += '<li>admin (Admin)</li>';
+                        html += '</ul>';
+                        document.getElementById('adminContent').innerHTML = html;
+                    };
+
+                    // Session zurücksetzen
+                    document.getElementById('resetSessionBtn').onclick = function() {
+                        sessionStorage.clear();
+                        document.getElementById('adminContent').innerHTML = '<span style="color:#38ef7d;">Session wurde zurückgesetzt. Bitte neu einloggen.</span>';
+                        setTimeout(() => location.reload(), 1200);
+                    };
+
+                    // Jackpot simulieren (Demo: zeigt zufälligen Jackpot)
+                    document.getElementById('simulateJackpotBtn').onclick = function() {
+                        let jackpot = Math.floor(Math.random() * 90000000) + 10000000;
+                        document.getElementById('adminContent').innerHTML = '<b>Jackpot Simulation:</b><br>Aktueller Jackpot: <span style="color:#ffe066;font-size:1.2em;">' + jackpot.toLocaleString('de-DE') + ' €</span>';
+                    };
+
+                    // Konfiguration exportieren (Rubellos)
+                    document.getElementById('exportConfigBtn').onclick = function() {
+                        let data = JSON.stringify(rubelloseArten, null, 2);
+                        let blob = new Blob([data], {type: 'application/json'});
+                        let url = URL.createObjectURL(blob);
+                        let a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'rubellos-konfiguration.json';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        document.getElementById('adminContent').innerHTML = '<span style="color:#38ef7d;">Konfiguration exportiert!</span>';
+                    };
+
+                    // Konfiguration importieren (Rubellos)
+                    document.getElementById('importConfigBtn').onclick = function() {
+                        let html = '<input type="file" id="importFile" accept=".json">';
+                        document.getElementById('adminContent').innerHTML = html;
+                        document.getElementById('importFile').onchange = function(e) {
+                            let file = e.target.files[0];
+                            if (!file) return;
+                            let reader = new FileReader();
+                            reader.onload = function(evt) {
+                                try {
+                                    let imported = JSON.parse(evt.target.result);
+                                    if (Array.isArray(imported)) {
+                                        imported.forEach((art, idx) => {
+                                            if (rubelloseArten[idx]) {
+                                                rubelloseArten[idx].name = art.name;
+                                                rubelloseArten[idx].felder = art.felder;
+                                                rubelloseArten[idx].gewinne = art.gewinne;
+                                            }
+                                        });
+                                        document.getElementById('adminContent').innerHTML = '<span style="color:#38ef7d;">Import erfolgreich!</span>';
+                                    } else {
+                                        document.getElementById('adminContent').innerHTML = '<span style="color:red;">Ungültige Datei!</span>';
+                                    }
+                                } catch {
+                                    document.getElementById('adminContent').innerHTML = '<span style="color:red;">Fehler beim Import!</span>';
+                                }
+                            };
+                            reader.readAsText(file);
+                        };
+                    };
+
+                    document.getElementById('closeAdminModal').onclick = function() {
+                        document.body.removeChild(adminModal);
+                    };
+                };
+            }
+        }
+    }
+
+    // Initial anzeigen
+    window.addEventListener('DOMContentLoaded', renderProfile);
+</script>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Lotto Simulator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            margin: 0;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            letter-spacing: 2px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 8px #0005;
+        }
+        h2, h3 {
+            text-align: center;
+            margin-top: 18px;
+            color: #ffe066;
+            text-shadow: 0 1px 6px #0006;
+        }
+        .zahlen, .eurozahlen {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 18px 0 10px 0;
+        }
+        .zahl, .eurozahl, .feld {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #f8f8f8 60%, #e0e0e0 100%);
+            color: #1e3c72;
+            font-size: 1.25em;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0002, 0 1px 0 #fff8 inset;
+            transition: background 0.2s, color 0.2s, transform 0.1s;
+            margin-bottom: 6px;
+            min-width: 40px;
+            min-height: 40px;
+            text-align: center;
+            font-weight: 600;
+            user-select: none;
+        }
+        .zahl:hover, .eurozahl:hover, .feld:hover {
+            background: linear-gradient(135deg, #ffe066 60%, #fffbe6 100%);
+            color: #2a5298;
+            transform: scale(1.08);
+        }
+        .feld {
+            display: inline-block;
+            margin: 6px;
+            border-radius: 16px;
+            min-width: 48px;
+            min-height: 48px;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #f8f8f8 60%, #e0e0e0 100%);
+            color: #1e3c72;
+        }
+        .aufgedeckt {
+            background: linear-gradient(135deg, #ffe066 60%, #fffbe6 100%) !important;
+            color: #2a5298 !important;
+            font-weight: bold;
+        }
+        .ausgewaehlt {
+            background: linear-gradient(135deg, #38ef7d 60%, #11998e 100%) !important;
+            color: #fff !important;
+            box-shadow: 0 0 0 3px #ffe06699, 0 2px 8px #0002;
+        }
+        #nochmalBtn, #schein button, #rubellosarten button, #rubellosAbgebenBtn, #rubellosNochmalBtn {
+            background: linear-gradient(135deg, #ffe066 60%, #ffb347 100%);
+            color: #1e3c72;
+            border: none;
+            border-radius: 24px;
+            padding: 10px 28px;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 15px 8px 0 0;
+            box-shadow: 0 2px 8px #0002;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, transform 0.1s;
+        }
+        #nochmalBtn:hover, #schein button:hover, #rubellosarten button:hover, #rubellosAbgebenBtn:hover, #rubellosNochmalBtn:hover {
+            background: linear-gradient(135deg, #ffb347 60%, #ffe066 100%);
+            color: #2a5298;
+            transform: scale(1.05);
+        }
+        #rubellosarten {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        #rubellosarten button {
+            margin-right: 10px;
+            margin-bottom: 8px;
+        }
+        .rubellose-container {
+            margin-top: 18px;
+            text-align: center;
+        }
+        #schein, #rubellos {
+            margin: 0 auto;
+            margin-top: 24px;
+            max-width: 600px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px #0003;
+            padding: 24px 18px 30px 18px;
+        }
+        @media (max-width: 700px) {
+            #schein, #rubellos {
+                max-width: 98vw;
+                padding: 10px 2vw 20px 2vw;
+            }
+            .zahlen, .eurozahlen {
+                gap: 6px;
+            }
+            .zahl, .eurozahl, .feld {
+                padding: 10px 0;
+                min-width: 32px;
+                min-height: 32px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Lotto Simulator</h1>
+    <div style="text-align:center;margin-bottom:10px;">
+        <button id="lottoBtn">Lotto 6 aus 49</button>
+        <button id="eurojackpotBtn">Eurojackpot</button>
+        <button id="rubellosBtn">Rubellose</button>
+        <button id="nochmalBtn">Nochmal</button>
+    </div>
+    <div id="schein"></div>
+    <div id="rubellos"></div>
+    <script>
+        const scheinDiv = document.getElementById('schein');
+        const rubellosDiv = document.getElementById('rubellos');
+        const nochmalBtn = document.getElementById('nochmalBtn');
+        let currentMode = '';
+        let selectedNumbers = [];
+        let selectedEuro = [];
+        let superzahl = null;
+        let rubellosArt = '';
+        let rubellosData = [];
+
+        function reset() {
+            scheinDiv.innerHTML = '';
+            rubellosDiv.innerHTML = '';
+            selectedNumbers = [];
+            selectedEuro = [];
+            superzahl = null;
+            rubellosArt = '';
+            rubellosData = [];
+            nochmalBtn.style.display = 'none';
+        }
+
+        // Lotto 6 aus 49
+        function showLotto() {
+            reset();
+            currentMode = 'lotto';
+            let html = '<h2>Lotto 6 aus 49</h2><div class="zahlen">';
+            for (let i = 1; i <= 49; i++) {
+                html += `<div class="zahl" data-nr="${i}">${i}</div>`;
+            }
+            html += '</div>';
+            html += '<div style="text-align:center;margin:10px 0;">Superzahl: <span id="superzahl" class="zahl" style="display:inline-block;min-width:32px;">?</span></div>';
+            html += '<div style="text-align:center;"><button id="abgebenBtn">Abgeben</button></div>';
+            scheinDiv.innerHTML = html;
+
+            document.querySelectorAll('.zahl').forEach(el => {
+                el.addEventListener('click', function() {
+                    const nr = parseInt(this.dataset.nr);
+                    if (nr) {
+                        if (selectedNumbers.includes(nr)) {
+                            selectedNumbers = selectedNumbers.filter(n => n !== nr);
+                            this.classList.remove('ausgewaehlt');
+                        } else if (selectedNumbers.length < 6) {
+                            selectedNumbers.push(nr);
+                            this.classList.add('ausgewaehlt');
+                        }
+                    }
+                });
+            });
+            document.getElementById('superzahl').addEventListener('click', function() {
+                if (superzahl === null) {
+                    superzahl = Math.floor(Math.random() * 10);
+                    this.textContent = superzahl;
+                    this.classList.add('ausgewaehlt');
+                }
+            });
+            document.getElementById('abgebenBtn').addEventListener('click', ziehungLotto);
+        }
+
+        function ziehungLotto() {
+            if (selectedNumbers.length !== 6 || superzahl === null) {
+                alert('Bitte 6 Zahlen und eine Superzahl wählen!');
+                return;
+            }
+            let gezogene = [];
+            while (gezogene.length < 6) {
+                let z = Math.floor(Math.random() * 49) + 1;
+                if (!gezogene.includes(z)) gezogene.push(z);
+            }
+            let gezSuper = Math.floor(Math.random() * 10);
+            let treffer = gezogene.filter(z => selectedNumbers.includes(z)).length;
+            let superTreffer = (superzahl === gezSuper);
+            let html = `<h3>Gezogene Zahlen: <span style="color:#38ef7d">${gezogene.join(', ')}</span></h3>`;
+            html += `<h3>Superzahl: <span style="color:#ffe066">${gezSuper}</span></h3>`;
+            html += `<p style="text-align:center;font-size:1.2em;">Du hast <b>${treffer} Richtige${superTreffer ? ' + Superzahl!' : ''}</b></p>`;
+            scheinDiv.innerHTML = html;
+            nochmalBtn.style.display = 'inline-block';
+        }
+
+        // Eurojackpot
+        function showEurojackpot() {
+            reset();
+            currentMode = 'eurojackpot';
+            let html = '<h2>Eurojackpot</h2><div class="zahlen">';
+            for (let i = 1; i <= 50; i++) {
+                html += `<div class="zahl" data-nr="${i}">${i}</div>`;
+            }
+            html += '</div>';
+            html += '<div class="eurozahlen">';
+            for (let i = 1; i <= 12; i++) {
+                html += `<div class="eurozahl" data-nr="${i}">${i}</div>`;
+            }
+            html += '</div>';
+            html += '<div style="text-align:center;"><button id="abgebenBtn">Abgeben</button></div>';
+            scheinDiv.innerHTML = html;
+
+            document.querySelectorAll('.zahl').forEach(el => {
+                el.addEventListener('click', function() {
+                    const nr = parseInt(this.dataset.nr);
+                    if (selectedNumbers.includes(nr)) {
+                        selectedNumbers = selectedNumbers.filter(n => n !== nr);
+                        this.classList.remove('ausgewaehlt');
+                    } else if (selectedNumbers.length < 5) {
+                        selectedNumbers.push(nr);
+                        this.classList.add('ausgewaehlt');
+                    }
+                });
+            });
+            document.querySelectorAll('.eurozahl').forEach(el => {
+                el.addEventListener('click', function() {
+                    const nr = parseInt(this.dataset.nr);
+                    if (selectedEuro.includes(nr)) {
+                        selectedEuro = selectedEuro.filter(n => n !== nr);
+                        this.classList.remove('ausgewaehlt');
+                    } else if (selectedEuro.length < 2) {
+                        selectedEuro.push(nr);
+                        this.classList.add('ausgewaehlt');
+                    }
+                });
+            });
+            document.getElementById('abgebenBtn').addEventListener('click', ziehungEurojackpot);
+        }
+
+        function ziehungEurojackpot() {
+            if (selectedNumbers.length !== 5 || selectedEuro.length !== 2) {
+                alert('Bitte 5 Zahlen und 2 Eurozahlen wählen!');
+                return;
+            }
+            let gezogene = [];
+            while (gezogene.length < 5) {
+                let z = Math.floor(Math.random() * 50) + 1;
+                if (!gezogene.includes(z)) gezogene.push(z);
+            }
+            let gezEuro = [];
+            while (gezEuro.length < 2) {
+                let z = Math.floor(Math.random() * 12) + 1;
+                if (!gezEuro.includes(z)) gezEuro.push(z);
+            }
+            let treffer = gezogene.filter(z => selectedNumbers.includes(z)).length;
+            let euroTreffer = gezEuro.filter(z => selectedEuro.includes(z)).length;
+            let html = `<h3>Gezogene Zahlen: <span style="color:#38ef7d">${gezogene.join(', ')}</span></h3>`;
+            html += `<h3>Eurozahlen: <span style="color:#ffe066">${gezEuro.join(', ')}</span></h3>`;
+            html += `<p style="text-align:center;font-size:1.2em;">Du hast <b>${treffer} Richtige</b> und <b>${euroTreffer} Eurozahlen</b>!</p>`;
+            scheinDiv.innerHTML = html;
+            nochmalBtn.style.display = 'inline-block';
+        }
+
+        // Rubellose
+        const rubelloseArten = [
+            { name: 'Klassik', felder: 9, gewinne: [0, 2, 5, 10, 20, 50, 100] },
+            { name: 'Gold', felder: 12, gewinne: [0, 5, 10, 20, 50, 100, 500] },
+            { name: 'Diamant', felder: 16, gewinne: [0, 10, 20, 50, 100, 500, 1000] }
+        ];
+
+        function showRubellos() {
+            reset();
+            currentMode = 'rubellos';
+            let html = '<h2>Rubellose</h2><div id="rubellosarten">';
+            rubelloseArten.forEach((art, idx) => {
+                html += `<button data-idx="${idx}">${art.name}</button>`;
+            });
+            html += '</div><div class="rubellose-container" id="rubelloseContainer"></div>';
+            rubellosDiv.innerHTML = html;
+            document.querySelectorAll('#rubellosarten button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    rubellosArt = rubelloseArten[parseInt(this.dataset.idx)];
+                    startRubellos();
+                });
+            });
+        }
+
+        function startRubellos() {
+            rubellosData = [];
+            for (let i = 0; i < rubellosArt.felder; i++) {
+                // Zufällig einen Gewinn zuweisen (mit hoher Wahrscheinlichkeit 0)
+                let gewinn = rubellosArt.gewinne[Math.floor(Math.random() * rubellosArt.gewinne.length)];
+                rubellosData.push({ aufgedeckt: false, gewinn });
+            }
+            renderRubellos();
+        }
+
+        function renderRubellos() {
+            let html = '<div style="display:inline-block;">';
+            rubellosData.forEach((feld, idx) => {
+                html += `<div class="feld${feld.aufgedeckt ? ' aufgedeckt' : ''}" data-idx="${idx}">${feld.aufgedeckt ? feld.gewinn + '€' : '?'}</div>`;
+                if ((idx + 1) % Math.sqrt(rubellosArt.felder) === 0) html += '<br>';
+            });
+            html += '</div>';
+            html += '<div style="margin-top:16px;"><button id="rubellosAbgebenBtn">Abgeben</button></div>';
+            document.getElementById('rubelloseContainer').innerHTML = html;
+            document.querySelectorAll('.feld').forEach(el => {
+                el.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.idx);
+                    if (!rubellosData[idx].aufgedeckt) {
+                        rubellosData[idx].aufgedeckt = true;
+                        renderRubellos();
+                    }
+                });
+            });
+            document.getElementById('rubellosAbgebenBtn').addEventListener('click', auswertungRubellos);
+        }
+
+        function auswertungRubellos() {
+            let summe = rubellosData.filter(f => f.aufgedeckt).reduce((a, b) => a + b.gewinn, 0);
+            let html = `<h3>Dein Gewinn: <span style="color:#38ef7d">${summe}€</span></h3>`;
+            html += '<button id="rubellosNochmalBtn">Nochmal</button>';
+            document.getElementById('rubelloseContainer').innerHTML += html;
+            document.getElementById('rubellosNochmalBtn').addEventListener('click', startRubellos);
+        }
+
+        // Event-Handler für Buttons
+        document.getElementById('lottoBtn').onclick = showLotto;
+        document.getElementById('eurojackpotBtn').onclick = showEurojackpot;
+        document.getElementById('rubellosBtn').onclick = showRubellos;
+        nochmalBtn.onclick = function() {
+            if (currentMode === 'lotto') showLotto();
+            else if (currentMode === 'eurojackpot') showEurojackpot();
+            else if (currentMode === 'rubellos') showRubellos();
+        };
+    </script>
+</body>
+</html>
+<footer style="text-align:center;margin:32px 0 18px 0;color:#fff;font-size:1em;">
+    <a href="impressum.html" style="color:#ffe066;margin:0 14px;text-decoration:underline;">Impressum</a>
+    <a href="datenschutz.html" style="color:#ffe066;margin:0 14px;text-decoration:underline;">Datenschutzrichtlinie</a>
+    <a href="agb.html" style="color:#ffe066;margin:0 14px;text-decoration:underline;">AGB</a>
+</footer>
